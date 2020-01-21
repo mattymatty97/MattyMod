@@ -3,33 +3,33 @@
 	{
 		//before SCP check
 		if (ConfigFile.ModConfig.MattyMod.RemoteKeycard)
-	{
-		try
 		{
-			Inventory.SyncListItemInfo items = this._inv.items;
-			int i = 0;
-			while (i < items.Count)
+			try
 			{
-				if (this._inv.GetItemByID(items[i].id).permissions.Contains(component.permissionLevel))
+				Inventory.SyncListItemInfo items = this._inv.items;
+				int i = 0;
+				while (i < items.Count)
 				{
-					if (!component.locked)
+					if (this._inv.GetItemByID(items[i].id).permissions.Contains(component.permissionLevel))
 					{
-						this.broadcastDoor(doorId);
-						component.ChangeState(false);
+						if (!component.locked)
+						{
+							this.broadcastDoor(doorId);
+							component.ChangeState(false);
+							return;
+						}
+						this.RpcDenied(doorId);
 						return;
 					}
-					this.RpcDenied(doorId);
-					return;
-				}
-				else
-				{
-					i++;
+					else
+					{
+						i++;
+					}
 				}
 			}
+			catch
+			{
+				this.RpcDenied(doorId);
+			}
 		}
-		catch
-		{
-			this.RpcDenied(doorId);
-		}
-	}
 	}
