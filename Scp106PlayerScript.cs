@@ -56,15 +56,16 @@ public partial class Scp106PlayerScript : NetworkBehaviour
 			NetworkConnection connectionToClient = base.connectionToClient;
 			Broadcast component = PlayerManager.localPlayer.GetComponent<Broadcast>();
 			component.TargetClearElements(connectionToClient);
-			component.TargetAddElement(connectionToClient, "<size=80><color=#0020ed><b>Stalk</b></color></size>" + Environment.NewLine + "In this server, you can <color=#0020ed><b>stalk</b></color> humans by double-clicking the portal creation button in the <b>[TAB]</b> menu.", 12U, false);
+			component.TargetAddElement(connectionToClient, ConfigFile.ModConfig.MattyMod.SCP106.Messages.Spawn.Replace("\\n", Environment.NewLine), 12U, false);
 		}
 		this.iAm106 = (classID == RoleType.Scp106);
 		this.sameClass = (c.team == Team.SCP);
-		if (Scp106PlayerScript.stalkyCd >= Time.time + 120f)
+		if (Scp106PlayerScript.stalkyCd >= Time.time + Math.Max(ConfigFile.ModConfig.MattyMod.SCP106.InitCooldown, ConfigFile.ModConfig.MattyMod.SCP106.Cooldown))
 		{
-			Scp106PlayerScript.stalkyCd = Time.time + 120f;
+			Scp106PlayerScript.stalkyCd = Time.time + Math.Max(ConfigFile.ModConfig.MattyMod.SCP106.InitCooldown, ConfigFile.ModConfig.MattyMod.SCP106.Cooldown);
 		}
 	}
+
 	// Token: 0x06001225 RID: 4645 RVA: 0x0006A720 File Offset: 0x00068920
 	public void CallCmdMakePortal()
 	{
@@ -80,7 +81,7 @@ public partial class Scp106PlayerScript : NetworkBehaviour
 		RaycastHit raycastHit;
 		if (this.iAm106 && !this.goingViaThePortal && Physics.Raycast(new Ray(base.transform.position, -base.transform.up), out raycastHit, 10f, this.teleportPlacementMask))
 		{
-			if (!Scp106PlayerScript.neonStalky106)
+			if (!ConfigFile.ModConfig.MattyMod.SCP106.Enable)
 			{
 				this.SetPortalPosition(raycastHit.point - Vector3.up);
 				return;
@@ -98,7 +99,7 @@ public partial class Scp106PlayerScript : NetworkBehaviour
 				if (num2 < 0f)
 				{
 					component.TargetClearElements(base.connectionToClient);
-					component.TargetAddElement(base.connectionToClient, Environment.NewLine + "Press the portal creation button again to <color=#ff0955><b>Stalk</b></color> a random player.", 6U, false);
+					component.TargetAddElement(base.connectionToClient, ConfigFile.ModConfig.MattyMod.SCP106.Messages.PressAgain.Replace("\\n", Environment.NewLine), 6U, false);
 				}
 				this.SetPortalPosition(raycastHit.point - Vector3.up);
 				return;
@@ -110,7 +111,7 @@ public partial class Scp106PlayerScript : NetworkBehaviour
 				int num3 = 0;
 				while (num3 < 5 && num2 > (float)num3)
 				{
-					component.TargetAddElement(base.connectionToClient, Environment.NewLine + "You have to wait $time seconds to use <color=#0020ed><b>Stalk</b></color>.".Replace("$time", (num2 - (float)num3).ToString("00")), 1U, false);
+					component.TargetAddElement(base.connectionToClient, ConfigFile.ModConfig.MattyMod.SCP106.Messages.Cooldown.Replace("\\n", Environment.NewLine).Replace("$time", (num2 - (float)num3).ToString("00")), 1U, false);
 					num3++;
 				}
 				Scp106PlayerScript.disableFor = Time.time + (float)num3 + 1f;
@@ -163,20 +164,16 @@ public partial class Scp106PlayerScript : NetworkBehaviour
 			yield break;
 		}
 		this.MovePortal(raycastHit.point - Vector3.up);
-		Scp106PlayerScript.stalkyCd = Time.time + 60f;
-		Timing.RunCoroutine(Scp106PlayerScript.StalkyCooldownAnnounce(60f), 1);
+		Scp106PlayerScript.stalkyCd = Time.time + ConfigFile.ModConfig.MattyMod.SCP106.Cooldown;
+		Timing.RunCoroutine(Scp106PlayerScript.StalkyCooldownAnnounce(ConfigFile.ModConfig.MattyMod.SCP106.Cooldown), 1);
 		Scp106PlayerScript.stalky106LastTick = Time.time;
 		Scp106PlayerScript.disableFor = Time.time + 10f;
-		string data = string.Concat(new string[]
-		{
-			Environment.NewLine,
-			"<i>You will <color=#0020ed><b>stalk</b></color><b>",
-			gameObject2.GetComponent<NicknameSync>().MyNick,
-			"</b>, who is a ",
-			Scp106PlayerScript.parser[(int)gameObject2.GetComponent<CharacterClassManager>().CurClass],
-			"</i>\n<size=30><color=#FFFFFF66>Cooldown: 60</color></size>"
-		});
-		bc.TargetAddElement(base.connectionToClient, data, 5U, false);
+		string text = ConfigFile.ModConfig.MattyMod.SCP106.Messages.Stalk;
+		text = text.Replace("\\n", Environment.NewLine);
+		text = text.Replace("$time", ConfigFile.ModConfig.MattyMod.SCP106.Cooldown.ToString());
+		text = text.Replace("$name", gameObject2.GetComponent<NicknameSync>().MyNick);
+		text = text.Replace("$class", Scp106PlayerScript.parser[(int)gameObject2.GetComponent<CharacterClassManager>().CurClass]);
+		bc.TargetAddElement(base.connectionToClient, text, 5U, false);
 		yield break;
 	}
 
@@ -220,7 +217,7 @@ public partial class Scp106PlayerScript : NetworkBehaviour
 				GameObject gameObject = enumerator.Current;
 				if (gameObject.GetComponent<CharacterClassManager>().CurClass == RoleType.Scp106)
 				{
-					component.TargetAddElement(gameObject.GetComponent<NetworkIdentity>().connectionToClient, Environment.NewLine + "<b><color=#0020ed><b>Stalk</b></color> <color=#00e861>ready</color></b>." + Environment.NewLine + "<size=30>Press the portal creation button twice to use it.</size>", 5U, false);
+					component.TargetAddElement(gameObject.GetComponent<NetworkIdentity>().connectionToClient, ConfigFile.ModConfig.MattyMod.SCP106.Messages.EndCooldown.Replace("\\n", Environment.NewLine), 5U, false);
 				}
 			}
 			yield break;
@@ -230,9 +227,9 @@ public partial class Scp106PlayerScript : NetworkBehaviour
 	// this must be called on round start btw
 	public static void InitializeStalky106()
 	{
-		global::Scp106PlayerScript.stalky106LastTick = 0f;
-		global::Scp106PlayerScript.stalkyCd = Time.time + 80f;
-		global::Scp106PlayerScript.disableFor = Time.time + 12f;
-		MEC.Timing.RunCoroutine(Scp106PlayerScript.StalkyCooldownAnnounce(80f), 1);	
+		Scp106PlayerScript.stalky106LastTick = 0f;
+		Scp106PlayerScript.stalkyCd = Time.time + ConfigFile.ModConfig.MattyMod.SCP106.InitCooldown;
+		Scp106PlayerScript.disableFor = Time.time + 12f;
+		Timing.RunCoroutine(Scp106PlayerScript.StalkyCooldownAnnounce(ConfigFile.ModConfig.MattyMod.SCP106.InitCooldown), 1);
 	}
 }
