@@ -10,7 +10,7 @@
 			return;
 		}
 		GameObject gameObject = this._processLookingQueue.Dequeue();
-		if (gameObject == null || !ReferenceHub.GetHub(gameObject).characterClassManager.IsHuman() || gameObject.GetComponent<FlashEffect>().blinded)
+		if (gameObject == null || !ReferenceHub.GetHub(gameObject).characterClassManager.IsHuman() || gameObject.GetComponent<FlashEffect>().blinded || (ConfigFile.ModConfig.MattyMod.SCP096.Tutorial && ReferenceHub.GetHub(gameObject).characterClassManager.CurClass == RoleType.Tutorial))
 		{
 			return;
 		}
