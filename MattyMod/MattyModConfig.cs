@@ -19,6 +19,8 @@ namespace MattyMod
 			this.scp914 = new MattyModConfig.Scp914();
 			this.scp173 = new MattyModConfig.Scp173();
 		}
+		
+		public string Version = "1.3";
 
 		// Token: 0x17000447 RID: 1095
 		// (get) Token: 0x06002522 RID: 9506 RVA: 0x00020F85 File Offset: 0x0001F185
