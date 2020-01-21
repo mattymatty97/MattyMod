@@ -16,6 +16,27 @@ namespace RemoteAdmin
 {
     public static partial class CommandProcessor
     {
+        private static Dictionary<string, Action<PlayerCommandSender, string[]>> additional_commands = new Dictionary<string, Action<PlayerCommandSender, string[]>>();
+        
+        static CommandProcessor()
+        {
+            CommandProcessor.additional_commands = new Dictionary<string, Action<PlayerCommandSender, string[]>>();
+            CommandProcessor.additional_commands.Add("PFF", delegate(PlayerCommandSender sender, string[] args)
+            {
+                if (!CommandProcessor.CheckPermissions(sender, args[0], PlayerPermissions.ServerConfigs, "", true))
+                {
+                    sender.RaReply(args[0].ToUpper() + "#No perms to ff.", false, true, "");
+                }
+                foreach (GameObject gameObject in PlayerManager.players)
+                {
+                    if (gameObject.GetComponent<QueryProcessor>().NetworkPlayerId.ToString().Equals(args[1]))
+                    {
+                        gameObject.GetComponent<WeaponManager>().NetworkfriendlyFire = bool.Parse(args[2]);
+                    }
+                }
+            });
+        }
+        
         internal static void ProcessQuery(string q, CommandSender sender)
         {
             string[] query = q.Split(' ');
@@ -2119,73 +2140,17 @@ namespace RemoteAdmin
                     }
                     sender.RaReply(query[0].ToUpper() + "#PBC command sent.", true, true, "");
                     return;
-                /* // This shit used to DDoS people (no shit, dawg.) so fix at your own risk.
-                case "BLACKOUTNEXT":
-                    if (blackoutShitBoolPersist)
-                    {
-                        sender.RaReply(query[0].ToUpper() + "#Persistant Blackout is active. Use BLACKOUTPERSIST to disable it before using this command.", true, true, "");
-                    }
-                    blackoutShitNextRound = !blackoutShitNextRound;
-                    sender.RaReply(query[0].ToUpper() + "#Blackout mode enabled next round : " + (blackoutShitNextRound ? "true" : "false"), true, true, "");
-                    return;
-                case "BLACKOUT":
-                    if (blackoutShitBoolPersist)
-                    {
-                        blackoutShitBoolPersist = false;
-                        sender.RaReply(query[0].ToUpper() + "#Persistant Blackout mode will be disabled next round.", true, true, "");
-                    }
-                    if (!blackoutShitRoundBool)
-                    {
-                        blackoutShitRoundBool = true;
-                        sender.RaReply(query[0].ToUpper() + "#Blackout mode enabled until round restart.", true, true, ""); MEC.Timing.RunCoroutine(ShitBlackoutThingey(), 1, "blackshit");
-                    }
-                    else
-                    {
-                        sender.RaReply(query[0].ToUpper() + "#You can't disable a blackout in this version of the game. Wait until next round.", false, true, "");
-                    }
-                    return;
-                case "BLACKOUTPERSIST":
-                    if (!blackoutShitBoolPersist)
-                    {
-                        blackoutShitBoolPersist = true;
-                        sender.RaReply(query[0].ToUpper() + "#Persistant Blackout mode enabled for the entirety of the round.", true, true, "");
-                        MEC.Timing.RunCoroutine(ShitBlackoutThingey(), 1, "blackshit");
-                    }
-                    else
-                    {
-                        blackoutShitBoolPersist = false;
-                        sender.RaReply(query[0].ToUpper() + "#Persistant Blackout mode will be disabled next round.", true, true, "");
-                    }
-                    return;
-                case "LIGHTSOUT":
-                    if (query.Length < 2)
-                    {
-                        sender.RaReply(query[0].ToUpper() + "#Usage: LIGHTSOUT <TIME>", false, true, "");
-                        return;
-                    }
-                    if (blackoutShitTime >= 0f || blackoutShitBoolPersist || blackoutShitRoundBool || blackoutShitNextRound)
-                    {
-                        sender.RaReply(query[0].ToUpper() + "#LIGHTS are already shut down, my dude. Try BLACKOUT/BLACKOUTPERSIST to disable it next round or something.", false, true, "");
-                        return;
-                    }
-                    if (!float.TryParse(query[1], out float time))
-                    {
-                        sender.RaReply(query[0].ToUpper() + "#Invalid time format.", true, true, "");
-                        return;
-                    }
-                    blackoutShitTime = time;
-                    Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(time, false);
-                    return;*/
                 default:
+                    Action<PlayerCommandSender, string[]> action = null;
+                    if (CommandProcessor.additional_commands.TryGetValue(query[0].ToUpper(), out action))
+                    {
+                        action(playerCommandSender, query);
+                        break;
+                    }
                     sender.RaReply("SYSTEM#Unknown command!", success: false, logToConsole: true, "");
                     break;
             }
         }
-        /*
-            private static float blackoutShitTime = 0f;
-            private static bool blackoutShitBoolPersist = false;
-            private static bool blackoutShitRoundBool = false;
-            private static bool blackoutShitNextRound = false;
-        */
+
     }
 }
