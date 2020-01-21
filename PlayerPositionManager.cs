@@ -1,5 +1,4 @@
 	private bool[] tutorials;
-	private bool invisTutorial;
 	// Token: 0x0600105D RID: 4189
 	[ServerCallback]
 	private void TransmitData()
@@ -19,7 +18,7 @@
 		{
 			this.receivedData[i] = new PlayerPositionData(players[i]);
 			// Initialize this variable down below on the Start() function using invisTutorial = GameCore.ConfigFile.ServerConfig.GetBool("neon_invistutorial", false);
-			if(invisTutorial) {
+			if(ConfigFile.ModConfig.MattyMod.InvisibleTutorial) {
 				tutorials[i] = players[i].GetComponent<CharacterClassManager>().CurClass == RoleType.Tutorial;
 			}
 			else
