@@ -42,7 +42,6 @@
 		}
 	}
 	public Dictionary<int, ReferenceHub> visiblePlys;
-    private bool neonScp096Rework = true;
 	
 	// Token: 0x060011BB RID: 4539 RVA: 0x00068C44 File Offset: 0x00066E44
 	internal void Init(RoleType classId, Role c)
@@ -66,7 +65,6 @@
 				}
 				stopTheShit = true;
 			}
-			this.neonScp096Rework = ConfigFile.ServerConfig.GetBool("neon_scp096", true);
 			return;
 		}
 		if (stopTheShit) {
@@ -123,7 +121,10 @@
 	}
 	void ModifiedJokerStuff() {
 		MEC.Timing.RunCoroutine(GetClosestPlayer(), 1, "gcp");
-		MEC.Timing.RunCoroutine(Punish(ReferenceHub.GetHub(this.gameObject)), 1, "punish");
+		if (ConfigFile.ModConfig.MattyMod.SCP096.Punish)
+		{
+			MEC.Timing.RunCoroutine(this.Punish(ReferenceHub.GetHub(base.gameObject)), 1, "punish");
+		}
 	}
 
 	public IEnumerator<float> GetClosestPlayer()
@@ -231,7 +232,7 @@
 		{
 			return;
 		}
-		if (Scp096PlayerScript.neonScp096Rework)
+		if (ConfigFile.ModConfig.MattyMod.SCP096.Enable)
 		{
 			Scp096PlayerScript.RageState rageState = this.enraged;
 			if (rageState <= Scp096PlayerScript.RageState.Panic)
