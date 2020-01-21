@@ -1,3 +1,5 @@
+#####THIS README IS OUTDATED#####
+
 # NeonMod
 
 This is just what I use to just slam my modified code into the new Assembly-CSharp everytime a new update comes out for SCP:SL.
